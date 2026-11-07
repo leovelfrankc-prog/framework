@@ -10,20 +10,11 @@ export class Componente {
    */
   constructor(tag = "div", config = {}) {
     this.tag = tag;
-
-    // Memoria interna del componente
     this.memoria = {};
-
-    // Referencia al elemento DOM
     this.elemento = null;
 
-    // Guardamos la config inicial en memoria
     this.guardarMemoria(config);
-
-    // Creamos el elemento
     this.crearElemento(tag);
-
-    // Aplicamos la configuración al DOM
     this.aplicarConfiguracion(config);
   }
 
@@ -61,7 +52,6 @@ export class Componente {
       this.elemento.id = id;
     }
 
-    // La apariencia se controla solo con clases CSS
     if (className) {
       this.elemento.className = className;
     }
@@ -74,14 +64,12 @@ export class Componente {
       this.elemento.value = value;
     }
 
-    // Atributos HTML (placeholder, type, disabled, etc.)
     if (attributes && typeof attributes === "object") {
       for (const [clave, valor] of Object.entries(attributes)) {
         this.elemento.setAttribute(clave, valor);
       }
     }
 
-    // Eventos (click, input, change, etc.)
     if (events && typeof events === "object") {
       for (const [evento, handler] of Object.entries(events)) {
         if (typeof handler === "function") {
@@ -90,7 +78,6 @@ export class Componente {
       }
     }
 
-    // Actualizamos la memoria con lo aplicado
     this.guardarMemoria(config);
   }
 
