@@ -1,21 +1,41 @@
-import { Input } from "./Input.js";
+// ============================================
+// INPUT
+// Hereda de Componente
+// ============================================
 
-const email = new Input({
-  id: "email",
-  className: "campo",
-  attributes: {
-    type: "email",
-    name: "email",
-    placeholder: "Correo electrónico",
-    required: "true"
-  },
-  events: {
-    change: () => console.log("email cambiado")
+import { Componente } from "./Componente.js";
+
+export class Input extends Componente {
+  /**
+   * @param {object} [config={}]
+   */
+  constructor(config = {}) {
+    super("input", config);
+
+    if (!this.elemento.getAttribute("type")) {
+      this.elemento.setAttribute("type", "text");
+    }
+
+    this.elemento.addEventListener("input", () => {
+      this.guardarMemoria({ value: this.elemento.value });
+    });
   }
-});
 
-// Más adelante:
-email.obtenerValor();
-email.establecerValor("test@mail.com");
-email.limpiar();
-email.deshabilitar(true);
+  obtenerValor() {
+    return this.elemento.value;
+  }
+
+  establecerValor(valor) {
+    this.elemento.value = valor;
+    this.guardarMemoria({ value: valor });
+  }
+
+  limpiar() {
+    this.establecerValor("");
+  }
+
+  deshabilitar(estado = true) {
+    this.elemento.disabled = estado;
+    this.guardarMemoria({ disabled: estado });
+  }
+}
