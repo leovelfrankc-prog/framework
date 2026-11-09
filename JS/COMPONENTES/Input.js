@@ -1,41 +1,20 @@
-// ============================================
-// INPUT
-// Hereda de Componente
-// ============================================
-
-import { Componente } from "./Componente.js";
-
-export class Input extends Componente {
-  /**
-   * @param {object} [config={}]
-   */
-  constructor(config = {}) {
-    super("input", config);
-
-    if (!this.elemento.getAttribute("type")) {
-      this.elemento.setAttribute("type", "text");
-    }
-
-    this.elemento.addEventListener("input", () => {
-      this.guardarMemoria({ value: this.elemento.value });
-    });
+// Input numérico obligatorio
+const inputEdad = new Input({
+  id: "edad",
+  tipoDato: "number",      // Automáticamente convierte el resultado a número
+  obligatorio: true,       // Añade el atributo required y permite validar
+  attributes: {
+    type: "number",
+    placeholder: "Edad"
   }
+});
 
-  obtenerValor() {
-    return this.elemento.value;
+// Input de texto normal
+const inputNombre = new Input({
+  id: "nombre",
+  tipoDato: "text",
+  attributes: {
+    type: "text",
+    placeholder: "Nombre"
   }
-
-  establecerValor(valor) {
-    this.elemento.value = valor;
-    this.guardarMemoria({ value: valor });
-  }
-
-  limpiar() {
-    this.establecerValor("");
-  }
-
-  deshabilitar(estado = true) {
-    this.elemento.disabled = estado;
-    this.guardarMemoria({ disabled: estado });
-  }
-}
+});
