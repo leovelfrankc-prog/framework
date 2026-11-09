@@ -11,8 +11,6 @@ export class Formulario extends Contenedor {
 
     this.config = config;
     this.botonSubmit = null;
-
-    // Estado booleano: se vuelve true en cuanto al menos un hijo es obligatorio
     this.tieneCamposObligatorios = false;
 
     // Interceptamos el evento submit
@@ -39,20 +37,47 @@ export class Formulario extends Contenedor {
   }
 
   /**
-   * Sobrescribimos render para asegurarnos de crear y añadir el botón 
-   * DESPUÉS de que todos los hijos ya fueron agregados a la vista.
+   * Registra los hijos y evalúa si existen campos obligatorios
+   */
+  agregarHijo(hijo, nombre = null) {
+    super.agregarHijo(hijo, nombre);
+
+    if (hijo && hijo.obligatorio === true) {
+      this.tieneCamposObligatorios = true;
+    }
+
+    const elDom = hijo.getElemento();
+    if (elDom) {
+      elDom.addEventListener("input", () => this.verificarEstadoBoton());
+      elDom.addEventListener("change", () => this.verificarEstadoBoton());
+    }
+
+    // Si el botón ya fue creado, actualizamos su estado en tiempo real
+    if (this.botonSubmit) {
+      this.verificarEstadoBoton();
+    }
+
+    return hijo;
+  }
+
+  /**
+   * ORDEN CORRECTO: Primero se agregan todos los hijos. 
+   * Cuando el motor manda a renderizar, sabemos que la estructura está completa, 
+   * por lo que creamos y nacemos el botón evaluando los campos previos.
    */
   render(contenedorPadre) {
+    // 1. Renderizamos primero todos los hijos ya recolectados
     const el = super.render(contenedorPadre);
 
+    // 2. UNA VEZ insertados los hijos, creamos y nacemos el botón al final
     if (!this.botonSubmit) {
-      this._crearBotonPorDefecto(this.config);
+      this._crearBotonAlFinal(this.config);
     }
 
     return el;
   }
 
-  _crearBotonPorDefecto(config) {
+  _crearBotonAlFinal(config) {
     const texto = config.textoBoton || "Enviar";
     const className = config.classNameBoton || "btn btn-submit";
 
@@ -65,37 +90,13 @@ export class Formulario extends Contenedor {
       }
     });
 
+    // Lo registramos y lo colocamos físicamente al final del DOM del formulario
     this.hijos.push(this.botonSubmit);
     this.guardarMemoria({ submit: this.botonSubmit });
     this.elemento.appendChild(this.botonSubmit.getElemento());
 
-    // Evaluamos el estado inicial consultando directamente nuestra bandera
+    // Nace evaluando inmediatamente el estado de los hijos ya insertados
     this.verificarEstadoBoton();
-  }
-
-  /**
-   * Evaluamos la obligatoriedad en tiempo de incorporación de cada hijo
-   */
-  agregarHijo(hijo, nombre = null) {
-    super.agregarHijo(hijo, nombre);
-
-    // Si el hijo recién agregado tiene la propiedad obligatorio en true, 
-    // encendemos permanentemente la bandera del formulario.
-    if (hijo && hijo.obligatorio === true) {
-      this.tieneCamposObligatorios = true;
-    }
-
-    const elDom = hijo.getElemento();
-    if (elDom) {
-      elDom.addEventListener("input", () => this.verificarEstadoBoton());
-      elDom.addEventListener("change", () => this.verificarEstadoBoton());
-    }
-
-    if (this.botonSubmit) {
-      this.verificarEstadoBoton();
-    }
-
-    return hijo;
   }
 
   esValido() {
@@ -114,8 +115,6 @@ export class Formulario extends Contenedor {
 
     let debeDeshabilitar = false;
 
-    // Regla solicitada: si existen campos obligatorios, evaluamos si el formulario es válido.
-    // Si hay obligatorios y aún no están llenos/válidos -> el botón se desactiva.
     if (this.tieneCamposObligatorios) {
       debeDeshabilitar = !this.esValido();
     }
