@@ -1,19 +1,21 @@
 // ============================================
 // VISTA PRUEBA
-// Utiliza la clase Formulario
+// Utiliza la clase Formulario con botón por defecto
 // ============================================
 
 import { Formulario } from "../COMPONENTES/Formulario.js";
 import { Input } from "../COMPONENTES/Input.js";
-import { Boton } from "../COMPONENTES/Boton.js";
 import { Componente } from "../COMPONENTES/Componente.js";
+// Nota: Ya no necesitamos importar 'Boton' aquí si el formulario lo gestiona solo.
 
 export class VistaPrueba {
   constructor() {
-    // Contenedor principal ahora es un Formulario
+    // Contenedor principal (Formulario) con el botón integrado por defecto
     this.raiz = new Formulario({
       id: "vista-prueba",
       className: "vista vista-prueba",
+      textoBoton: "Saludar",       // Texto que tendrá el botón generado automáticamente
+      classNameBoton: "btn btn-primario", // Clases opcionales para estilizarlo
       onSubmit: (datos) => {
         this.saludar(datos);
       }
@@ -32,7 +34,7 @@ export class VistaPrueba {
       className: "titulo"
     });
 
-    // Input de nombre (lo marcamos como obligatorio para que el formulario controle el botón)
+    // Input de nombre (obligatorio: mantendrá el botón del formulario desactivado hasta que escribas algo)
     const inputNombre = new Input({
       id: "nombre",
       className: "campo",
@@ -44,16 +46,6 @@ export class VistaPrueba {
       }
     });
 
-    // Botón de envío (submit)
-    const botonSaludar = new Boton({
-      id: "btn-saludar",
-      className: "btn btn-primario",
-      text: "Saludar",
-      attributes: {
-        type: "submit" // Importante para que el formulario lo identifique como disparador
-      }
-    });
-
     // Zona de resultado
     const resultado = new Componente("p", {
       id: "resultado",
@@ -61,10 +53,9 @@ export class VistaPrueba {
       text: ""
     });
 
-    // Insertamos todo en el formulario raíz registrando las claves
+    // Insertamos los elementos en el formulario raíz (el botón se añade solo al final)
     this.raiz.agregarHijo(titulo, "titulo");
     this.raiz.agregarHijo(inputNombre, "nombre");
-    this.raiz.agregarHijo(botonSaludar, "submit"); // Identificado como "submit" para el control automático
     this.raiz.agregarHijo(resultado, "resultado");
   }
 
