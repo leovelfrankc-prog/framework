@@ -1,24 +1,18 @@
 // ============================================
-// FORMULARIO (Con botón de submit por defecto)
+// FORMULARIO (Corrección de estado inicial del botón)
 // ============================================
 
 import { Contenedor } from "./Contenedor.js";
-import { Boton } from "./Boton.js"; // Asegúrate de importar tu clase Boton
+import { Boton } from "./Boton.js";
 
 export class Formulario extends Contenedor {
-  /**
-   * @param {object} [config={}]
-   * @param {string} [config.textoBoton="Enviar"] - Texto por defecto del botón
-   * @param {string} [config.classNameBoton=""] - Clases CSS opcionales para el botón
-   * @param {Function} [config.onSubmit] - Callback al enviar
-   */
   constructor(config = {}) {
     super("form", config);
 
     this.config = config;
     this.botonSubmit = null;
 
-    // 1. Creamos el botón de envío por defecto automáticamente
+    // 1. Creamos el botón pero sin evaluar su estado todavía
     this._crearBotonPorDefecto(config);
 
     // 2. Interceptamos el evento submit
@@ -42,16 +36,16 @@ export class Formulario extends Contenedor {
         this.verificarEstadoBoton();
       }
     });
+
+    // 3. CORRECCIÓN: Evaluamos el estado inicial una vez que toda la estructura 
+    // y los inputs ya fueron definidos en la vista hija.
+    setTimeout(() => this.verificarEstadoBoton(), 0);
   }
 
-  /**
-   * Genera e inserta el botón de envío al final del formulario por defecto
-   */
   _crearBotonPorDefecto(config) {
     const texto = config.textoBoton || "Enviar";
     const className = config.classNameBoton || "btn btn-submit";
 
-    // Instanciamos tu clase Boton
     this.botonSubmit = new Boton({
       id: config.idBoton || "btn-submit-default",
       className: className,
@@ -61,17 +55,11 @@ export class Formulario extends Contenedor {
       }
     });
 
-    // Lo agregamos internamente al contenedor DOM y registramos su instancia
     this.hijos.push(this.botonSubmit);
     this.elemento.appendChild(this.botonSubmit.getElemento());
-
-    // Evaluamos su estado inicial (desactivado si hay campos obligatorios vacíos)
-    this.verificarEstadoBoton();
+    // Nota: Quitamos la llamada a verificarEstadoBoton() de aquí para que espere a los inputs
   }
 
-  /**
-   * Sobrescribimos agregarHijo para escuchar cambios y actualizar el botón
-   */
   agregarHijo(hijo, nombre = null) {
     super.agregarHijo(hijo, nombre);
 
@@ -80,6 +68,9 @@ export class Formulario extends Contenedor {
       elDom.addEventListener("input", () => this.verificarEstadoBoton());
       elDom.addEventListener("change", () => this.verificarEstadoBoton());
     }
+
+    // Cada vez que agregues un input, re-evaluamos el botón por si hay obligatorios vacíos
+    this.verificarEstadoBoton();
 
     return hijo;
   }
