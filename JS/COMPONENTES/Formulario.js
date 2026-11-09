@@ -1,16 +1,27 @@
 // ============================================
-// FORMULARIO (Actualizado con detección robusta de botón)
+// FORMULARIO (Con botón de submit por defecto)
 // ============================================
 
 import { Contenedor } from "./Contenedor.js";
+import { Boton } from "./Boton.js"; // Asegúrate de importar tu clase Boton
 
 export class Formulario extends Contenedor {
+  /**
+   * @param {object} [config={}]
+   * @param {string} [config.textoBoton="Enviar"] - Texto por defecto del botón
+   * @param {string} [config.classNameBoton=""] - Clases CSS opcionales para el botón
+   * @param {Function} [config.onSubmit] - Callback al enviar
+   */
   constructor(config = {}) {
     super("form", config);
 
     this.config = config;
     this.botonSubmit = null;
 
+    // 1. Creamos el botón de envío por defecto automáticamente
+    this._crearBotonPorDefecto(config);
+
+    // 2. Interceptamos el evento submit
     this.elemento.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -34,26 +45,37 @@ export class Formulario extends Contenedor {
   }
 
   /**
-   * Detecta y registra hijos, identificando automáticamente el botón de envío
+   * Genera e inserta el botón de envío al final del formulario por defecto
+   */
+  _crearBotonPorDefecto(config) {
+    const texto = config.textoBoton || "Enviar";
+    const className = config.classNameBoton || "btn btn-submit";
+
+    // Instanciamos tu clase Boton
+    this.botonSubmit = new Boton({
+      id: config.idBoton || "btn-submit-default",
+      className: className,
+      text: texto,
+      attributes: {
+        type: "submit"
+      }
+    });
+
+    // Lo agregamos internamente al contenedor DOM y registramos su instancia
+    this.hijos.push(this.botonSubmit);
+    this.elemento.appendChild(this.botonSubmit.getElemento());
+
+    // Evaluamos su estado inicial (desactivado si hay campos obligatorios vacíos)
+    this.verificarEstadoBoton();
+  }
+
+  /**
+   * Sobrescribimos agregarHijo para escuchar cambios y actualizar el botón
    */
   agregarHijo(hijo, nombre = null) {
     super.agregarHijo(hijo, nombre);
 
     const elDom = hijo.getElemento();
-
-    // Detección robusta: si se llama "submit", o su tag es button/input con type="submit"
-    const esBotonSubmit = 
-      nombre === "submit" || 
-      (elDom && elDom.tagName === "BUTTON") || 
-      (elDom && elDom.type === "submit");
-
-    if (esBotonSubmit && !this.botonSubmit) {
-      this.botonSubmit = hijo;
-      // Forzamos la verificación inicial apenas se registra el botón
-      this.verificarEstadoBoton();
-    }
-
-    // Escuchamos eventos de cambio en los inputs para actualizar el botón en tiempo real
     if (elDom) {
       elDom.addEventListener("input", () => this.verificarEstadoBoton());
       elDom.addEventListener("change", () => this.verificarEstadoBoton());
