@@ -1,19 +1,22 @@
 // ============================================
 // VISTA PRUEBA
-// Une Contenedor + Input + Boton
+// Utiliza la clase Formulario
 // ============================================
 
-import { Contenedor } from "../COMPONENTES/Contenedor.js";
+import { Formulario } from "../COMPONENTES/Formulario.js";
 import { Input } from "../COMPONENTES/Input.js";
 import { Boton } from "../COMPONENTES/Boton.js";
 import { Componente } from "../COMPONENTES/Componente.js";
 
 export class VistaPrueba {
   constructor() {
-    // Contenedor principal de la vista
-    this.raiz = new Contenedor("section", {
+    // Contenedor principal ahora es un Formulario
+    this.raiz = new Formulario({
       id: "vista-prueba",
-      className: "vista vista-prueba"
+      className: "vista vista-prueba",
+      onSubmit: (datos) => {
+        this.saludar(datos);
+      }
     });
 
     this.construir();
@@ -25,14 +28,15 @@ export class VistaPrueba {
   construir() {
     // Título
     const titulo = new Componente("h2", {
-      text: "Vista de prueba",
+      text: "Vista de prueba con Formulario",
       className: "titulo"
     });
 
-    // Input de nombre
+    // Input de nombre (lo marcamos como obligatorio para que el formulario controle el botón)
     const inputNombre = new Input({
       id: "nombre",
       className: "campo",
+      obligatorio: true,
       attributes: {
         type: "text",
         name: "nombre",
@@ -40,13 +44,13 @@ export class VistaPrueba {
       }
     });
 
-    // Botón
+    // Botón de envío (submit)
     const botonSaludar = new Boton({
       id: "btn-saludar",
       className: "btn btn-primario",
       text: "Saludar",
-      events: {
-        click: () => this.saludar()
+      attributes: {
+        type: "submit" // Importante para que el formulario lo identifique como disparador
       }
     });
 
@@ -57,21 +61,20 @@ export class VistaPrueba {
       text: ""
     });
 
-    // Insertamos todo en el contenedor raíz
+    // Insertamos todo en el formulario raíz registrando las claves
     this.raiz.agregarHijo(titulo, "titulo");
     this.raiz.agregarHijo(inputNombre, "nombre");
-    this.raiz.agregarHijo(botonSaludar, "saludar");
+    this.raiz.agregarHijo(botonSaludar, "submit"); // Identificado como "submit" para el control automático
     this.raiz.agregarHijo(resultado, "resultado");
   }
 
   /**
-   * Lógica de ejemplo: lee el input y muestra un mensaje
+   * Lógica ejecutada automáticamente por el onSubmit del Formulario
+   * @param {Object} datos - Objeto empaquetado con los valores del formulario
    */
-  saludar() {
-    const input = this.raiz.obtenerHijo("nombre");
+  saludar(datos) {
     const resultado = this.raiz.obtenerHijo("resultado");
-
-    const nombre = input.obtenerValor().trim();
+    const nombre = datos.nombre ? datos.nombre.trim() : "";
 
     if (!nombre) {
       resultado.getElemento().textContent = "Escribe un nombre primero.";
