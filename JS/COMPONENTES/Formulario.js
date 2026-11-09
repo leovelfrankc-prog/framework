@@ -12,11 +12,7 @@ export class Formulario extends Contenedor {
     this.config = config;
     this.botonSubmit = null;
 
-    // 1. Solo creamos la instancia del botón y lo guardamos en memoria, 
-    // pero NO lo insertamos en el DOM todavía para que quede al final.
-    this._crearInstanciaBoton(config);
-
-    // 2. Interceptamos el evento submit
+    // Interceptamos el evento submit
     this.elemento.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -40,9 +36,23 @@ export class Formulario extends Contenedor {
   }
 
   /**
-   * Crea la instancia lógica del botón por defecto sin agregarlo prematuramente al DOM
+   * Sobrescribimos render para asegurarnos de crear y añadir el botón 
+   * ÚNICAMENTE DESPUÉS de que todos los hijos ya fueron agregados a la vista.
    */
-  _crearInstanciaBoton(config) {
+  render(contenedorPadre) {
+    // 1. Renderizamos primero todos los hijos (inputs, títulos, etc.)
+    const el = super.render(contenedorPadre);
+
+    // 2. Si el botón por defecto aún no ha sido creado, lo creamos ahora 
+    // que ya tenemos la certeza de conocer todos los hijos del formulario.
+    if (!this.botonSubmit) {
+      this._crearBotonPorDefecto(this.config);
+    }
+
+    return el;
+  }
+
+  _crearBotonPorDefecto(config) {
     const texto = config.textoBoton || "Enviar";
     const className = config.classNameBoton || "btn btn-submit";
 
@@ -55,28 +65,13 @@ export class Formulario extends Contenedor {
       }
     });
 
-    // Guardamos la referencia en memoria y en la lista de hijos lógicos
+    // Lo registramos en la lista de hijos y lo insertamos físicamente al final del DOM
     this.hijos.push(this.botonSubmit);
     this.guardarMemoria({ submit: this.botonSubmit });
-  }
+    this.elemento.appendChild(this.botonSubmit.getElemento());
 
-  /**
-   * Sobrescribimos render para asegurar que el botón por defecto 
-   * se adjunte físicamente al final de todo el contenido del formulario.
-   */
-  render(contenedorPadre) {
-    // Primero dejamos que el contenedor renderice sus elementos hijos (títulos, inputs, etc.)
-    const el = super.render(contenedorPadre);
-
-    // Si tenemos un botón por defecto y aún no está en el DOM del form, lo anexamos al final
-    if (this.botonSubmit && !this.elemento.contains(this.botonSubmit.getElemento())) {
-      this.elemento.appendChild(this.botonSubmit.getElemento());
-    }
-
-    // Evaluamos el estado inicial una vez que todo está montado en el DOM
+    // Evaluamos su estado de inmediato (aquí ya sabe si hay campos obligatorios vacíos)
     this.verificarEstadoBoton();
-
-    return el;
   }
 
   agregarHijo(hijo, nombre = null) {
@@ -88,15 +83,16 @@ export class Formulario extends Contenedor {
       elDom.addEventListener("change", () => this.verificarEstadoBoton());
     }
 
-    // Re-evaluamos cada vez que se añade un elemento
-    this.verificarEstadoBoton();
+    // Si el botón ya existe (post-renderizado), re-evaluamos en tiempo real
+    if (this.botonSubmit) {
+      this.verificarEstadoBoton();
+    }
 
     return hijo;
   }
 
   esValido() {
     for (const hijo of this.hijos) {
-      // Ignoramos el propio botón al validar
       if (hijo === this.botonSubmit) continue;
 
       if (typeof hijo.esValido === "function" && !hijo.esValido()) {
