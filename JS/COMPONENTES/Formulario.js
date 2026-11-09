@@ -1,5 +1,5 @@
 // ============================================
-// FORMULARIO (Corrección de estado inicial del botón)
+// FORMULARIO
 // ============================================
 
 import { Contenedor } from "./Contenedor.js";
@@ -12,8 +12,9 @@ export class Formulario extends Contenedor {
     this.config = config;
     this.botonSubmit = null;
 
-    // 1. Creamos el botón pero sin evaluar su estado todavía
-    this._crearBotonPorDefecto(config);
+    // 1. Solo creamos la instancia del botón y lo guardamos en memoria, 
+    // pero NO lo insertamos en el DOM todavía para que quede al final.
+    this._crearInstanciaBoton(config);
 
     // 2. Interceptamos el evento submit
     this.elemento.addEventListener("submit", async (e) => {
@@ -36,13 +37,12 @@ export class Formulario extends Contenedor {
         this.verificarEstadoBoton();
       }
     });
-
-    // 3. CORRECCIÓN: Evaluamos el estado inicial una vez que toda la estructura 
-    // y los inputs ya fueron definidos en la vista hija.
-    setTimeout(() => this.verificarEstadoBoton(), 0);
   }
 
-  _crearBotonPorDefecto(config) {
+  /**
+   * Crea la instancia lógica del botón por defecto sin agregarlo prematuramente al DOM
+   */
+  _crearInstanciaBoton(config) {
     const texto = config.textoBoton || "Enviar";
     const className = config.classNameBoton || "btn btn-submit";
 
@@ -55,9 +55,28 @@ export class Formulario extends Contenedor {
       }
     });
 
+    // Guardamos la referencia en memoria y en la lista de hijos lógicos
     this.hijos.push(this.botonSubmit);
-    this.elemento.appendChild(this.botonSubmit.getElemento());
-    // Nota: Quitamos la llamada a verificarEstadoBoton() de aquí para que espere a los inputs
+    this.guardarMemoria({ submit: this.botonSubmit });
+  }
+
+  /**
+   * Sobrescribimos render para asegurar que el botón por defecto 
+   * se adjunte físicamente al final de todo el contenido del formulario.
+   */
+  render(contenedorPadre) {
+    // Primero dejamos que el contenedor renderice sus elementos hijos (títulos, inputs, etc.)
+    const el = super.render(contenedorPadre);
+
+    // Si tenemos un botón por defecto y aún no está en el DOM del form, lo anexamos al final
+    if (this.botonSubmit && !this.elemento.contains(this.botonSubmit.getElemento())) {
+      this.elemento.appendChild(this.botonSubmit.getElemento());
+    }
+
+    // Evaluamos el estado inicial una vez que todo está montado en el DOM
+    this.verificarEstadoBoton();
+
+    return el;
   }
 
   agregarHijo(hijo, nombre = null) {
@@ -69,7 +88,7 @@ export class Formulario extends Contenedor {
       elDom.addEventListener("change", () => this.verificarEstadoBoton());
     }
 
-    // Cada vez que agregues un input, re-evaluamos el botón por si hay obligatorios vacíos
+    // Re-evaluamos cada vez que se añade un elemento
     this.verificarEstadoBoton();
 
     return hijo;
@@ -77,6 +96,9 @@ export class Formulario extends Contenedor {
 
   esValido() {
     for (const hijo of this.hijos) {
+      // Ignoramos el propio botón al validar
+      if (hijo === this.botonSubmit) continue;
+
       if (typeof hijo.esValido === "function" && !hijo.esValido()) {
         return false;
       }
@@ -110,7 +132,7 @@ export class Formulario extends Contenedor {
     const datos = {};
 
     for (const [clave, valor] of Object.entries(this.memoria)) {
-      if (valor && typeof valor === "object") {
+      if (valor && typeof valor === "object" && valor !== this.botonSubmit) {
         if (typeof valor.obtenerValor === "function") {
           datos[clave] = valor.obtenerValor();
         } else if (typeof valor.obtenerArchivo === "function") {
