@@ -1,20 +1,71 @@
-// Input numérico obligatorio
-const inputEdad = new Input({
-  id: "edad",
-  tipoDato: "number",      // Automáticamente convierte el resultado a número
-  obligatorio: true,       // Añade el atributo required y permite validar
-  attributes: {
-    type: "number",
-    placeholder: "Edad"
-  }
-});
+// ============================================
+// INPUT
+// Hereda de Componente
+// ============================================
 
-// Input de texto normal
-const inputNombre = new Input({
-  id: "nombre",
-  tipoDato: "text",
-  attributes: {
-    type: "text",
-    placeholder: "Nombre"
+import { Componente } from "./Componente.js";
+
+export class Input extends Componente {
+  /**
+   * @param {object} [config={}]
+   * @param {string} [config.tipoDato="text"] - "text" o "number" para el valor devuelto
+   * @param {boolean} [config.obligatorio=false] - Si el campo es obligatorio
+   */
+  constructor(config = {}) {
+    super("input", config);
+
+    this.tipoDato = config.tipoDato || "text";
+    this.obligatorio = config.obligatorio || false;
+
+    if (!this.elemento.getAttribute("type")) {
+      const typeDefault = this.tipoDato === "number" ? "number" : "text";
+      this.elemento.setAttribute("type", typeDefault);
+    }
+
+    if (this.obligatorio) {
+      this.elemento.setAttribute("required", "true");
+    }
+
+    this.elemento.addEventListener("input", () => {
+      this.guardarMemoria({ value: this.obtenerValor() });
+    });
   }
-});
+
+  /**
+   * Obtiene el valor adaptado al tipo especificado (texto o número)
+   */
+  obtenerValor() {
+    const valorCrudo = this.elemento.value;
+
+    if (this.tipoDato === "number") {
+      if (valorCrudo === "") return null;
+      return Number(valorCrudo);
+    }
+
+    return valorCrudo;
+  }
+
+  establecerValor(valor) {
+    this.elemento.value = valor !== null && valor !== undefined ? valor : "";
+    this.guardarMemoria({ value: this.obtenerValor() });
+  }
+
+  /**
+   * Valida si el campo cumple con la regla de obligatoriedad
+   */
+  esValido() {
+    if (this.obligatorio && !this.elemento.value.trim()) {
+      return false;
+    }
+    return true;
+  }
+
+  limpiar() {
+    this.establecerValor("");
+  }
+
+  deshabilitar(estado = true) {
+    this.elemento.disabled = estado;
+    this.guardarMemoria({ disabled: estado });
+  }
+}
