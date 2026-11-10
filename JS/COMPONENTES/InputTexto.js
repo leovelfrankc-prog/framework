@@ -1,3 +1,5 @@
+import { Componente } from "./Componente.js";
+
 export class InputTexto extends Componente {
 
     constructor(config = {}) {
@@ -6,9 +8,7 @@ export class InputTexto extends Componente {
 
         this.elemento.type = "text";
 
-        this.obligatorio = Boolean(
-            config.obligatorio
-        );
+        this.obligatorio = Boolean(config.obligatorio);
 
         if (this.obligatorio) {
             this.elemento.required = true;
@@ -16,16 +16,13 @@ export class InputTexto extends Componente {
 
         this.aplicarConfiguracion(config);
 
-        this.elemento.addEventListener(
-            "input",
-            () => {
+        this.elemento.addEventListener("input", () => {
 
-                this.guardarMemoria({
-                    valor: this.obtenerValor()
-                });
+            this.guardarMemoria({
+                valor: this.obtenerValor()
+            });
 
-            }
-        );
+        });
     }
 
     obtenerValor() {
@@ -35,6 +32,10 @@ export class InputTexto extends Componente {
     establecerValor(valor = "") {
 
         this.elemento.value = valor;
+
+        this.guardarMemoria({
+            valor
+        });
 
         return this;
     }
