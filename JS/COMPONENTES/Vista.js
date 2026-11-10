@@ -6,10 +6,10 @@ export class Vista extends Contenedor {
 
         super("div", config);
 
-        this.construir();
+        this.inicializar();
     }
 
-    construir() {
+    inicializar() {
         // Sobrescribir en las vistas hijas
     }
 
