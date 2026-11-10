@@ -8,24 +8,10 @@ export class Boton extends Componente {
 
         this.elemento.type = "button";
 
-        if (config.id) {
-            this.elemento.id = config.id;
-        }
-
-        if (config.className) {
-            this.elemento.className = config.className;
-        }
+        this.aplicarConfiguracion(config);
 
         if (config.texto) {
-            this.elemento.textContent = config.texto;
-        }
-
-        if (typeof config.onClick === "function") {
-
-            this.elemento.addEventListener(
-                "click",
-                config.onClick
-            );
+            this.establecerTexto(config.texto);
         }
     }
 
@@ -33,20 +19,15 @@ export class Boton extends Componente {
 
         this.elemento.textContent = texto;
 
-        return this;
-    }
-
-    deshabilitar() {
-
-        this.elemento.disabled = true;
+        this.guardarMemoria({
+            texto
+        });
 
         return this;
     }
 
-    habilitar() {
-
-        this.elemento.disabled = false;
-
-        return this;
+    obtenerTexto() {
+        return this.elemento.textContent;
     }
+
 }
