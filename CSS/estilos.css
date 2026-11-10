@@ -39,6 +39,10 @@ body {
   background: #2563eb;
   color: white;
 }
+.btn-secundary {
+  background: #2563eb;
+  color: black;
+}
 
 .resultado {
   margin-top: 1rem;
