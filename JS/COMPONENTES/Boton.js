@@ -1,71 +1,52 @@
-// ============================================
-// BOTON
-// Hereda de Componente
-// ============================================
-
 import { Componente } from "./Componente.js";
 
 export class Boton extends Componente {
-  /**
-   * @param {object} [config={}]
-   * @param {string} [config.text=""] - Texto del botón
-   * @param {string} [config.type="button"] - Tipo de botón (button, submit, reset)
-   */
-  constructor(config = {}) {
-    super("button", config);
 
-    // Texto por defecto
-    if (config.text) {
-      this.elemento.textContent = config.text;
+    constructor(config = {}) {
+
+        super("button");
+
+        this.elemento.type = "button";
+
+        if (config.id) {
+            this.elemento.id = config.id;
+        }
+
+        if (config.className) {
+            this.elemento.className = config.className;
+        }
+
+        if (config.texto) {
+            this.elemento.textContent = config.texto;
+        }
+
+        if (typeof config.onClick === "function") {
+
+            this.elemento.addEventListener(
+                "click",
+                config.onClick
+            );
+        }
     }
 
-    // Tipo de botón por defecto
-    if (!this.elemento.getAttribute("type")) {
-      this.elemento.setAttribute("type", config.attributes?.type || "button");
+    establecerTexto(texto) {
+
+        this.elemento.textContent = texto;
+
+        return this;
     }
 
-    // Eventos personalizados (ej. click)
-    if (config.events && typeof config.events === "object") {
-      for (const [evento, callback] of Object.entries(config.events)) {
-        this.elemento.addEventListener(evento, callback);
-      }
+    deshabilitar() {
+
+        this.elemento.disabled = true;
+
+        return this;
     }
-  }
 
-  /**
-   * Habilita el botón
-   */
-  habilitar() {
-    this.elemento.disabled = false;
-    this.guardarMemoria({ disabled: false });
-  }
+    habilitar() {
 
-  /**
-   * Deshabilita el botón
-   */
-  deshabilitar() {
-    this.elemento.disabled = true;
-    this.guardarMemoria({ disabled: true });
-  }
+        this.elemento.disabled = false;
 
-  /**
-   * Cambia el estado de habilitado/deshabilitado dinámicamente
-   * @param {boolean} estado - True para deshabilitar, false para habilitar
-   */
-  establecerDeshabilitado(estado) {
-    if (estado) {
-      this.deshabilitar();
-    } else {
-      this.habilitar();
+        return this;
     }
-  }
-
-  /**
-   * Cambia el texto del botón
-   * @param {string} texto 
-   */
-  establecerTexto(texto) {
-    this.elemento.textContent = texto;
-    this.guardarMemoria({ text: texto });
-  }
 }
