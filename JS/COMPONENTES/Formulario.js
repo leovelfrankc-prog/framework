@@ -62,14 +62,11 @@ export class Formulario extends Contenedor {
 
   /**
    * ORDEN CORRECTO: Primero se agregan todos los hijos. 
-   * Cuando el motor manda a renderizar, sabemos que la estructura está completa, 
-   * por lo que creamos y nacemos el botón evaluando los campos previos.
+   * Cuando el motor manda a renderizar, creamos el botón al final y evaluamos.
    */
   render(contenedorPadre) {
-    // 1. Renderizamos primero todos los hijos ya recolectados
     const el = super.render(contenedorPadre);
 
-    // 2. UNA VEZ insertados los hijos, creamos y nacemos el botón al final
     if (!this.botonSubmit) {
       this._crearBotonAlFinal(this.config);
     }
@@ -90,12 +87,11 @@ export class Formulario extends Contenedor {
       }
     });
 
-    // Lo registramos y lo colocamos físicamente al final del DOM del formulario
     this.hijos.push(this.botonSubmit);
     this.guardarMemoria({ submit: this.botonSubmit });
     this.elemento.appendChild(this.botonSubmit.getElemento());
 
-    // Nace evaluando inmediatamente el estado de los hijos ya insertados
+    // Nace evaluando inmediatamente el estado con los nuevos métodos
     this.verificarEstadoBoton();
   }
 
@@ -119,20 +115,22 @@ export class Formulario extends Contenedor {
       debeDeshabilitar = !this.esValido();
     }
 
-    if (typeof this.botonSubmit.deshabilitar === "function") {
-      this.botonSubmit.deshabilitar(debeDeshabilitar);
+    // Uso limpio de los métodos de la clase Boton
+    if (debeDeshabilitar) {
+      this.botonSubmit.deshabilitar();
     } else {
-      this.botonSubmit.getElemento().disabled = debeDeshabilitar;
+      this.botonSubmit.habilitar();
     }
   }
 
   bloquearEnvio(bloquear = true) {
     if (!this.botonSubmit) return;
 
-    if (typeof this.botonSubmit.deshabilitar === "function") {
-      this.botonSubmit.deshabilitar(bloquear);
+    // Uso de los métodos de la clase Boton para bloquear/desbloquear durante el envío
+    if (bloquear) {
+      this.botonSubmit.deshabilitar();
     } else {
-      this.botonSubmit.getElemento().disabled = bloquear;
+      this.botonSubmit.habilitar();
     }
   }
 
