@@ -3,7 +3,9 @@ export class Componente {
     constructor(tag) {
 
         if (!tag) {
-            throw new Error("Debe especificarse una etiqueta HTML.");
+            throw new Error(
+                "Debe especificarse una etiqueta HTML."
+            );
         }
 
         this.tag = tag;
@@ -15,6 +17,7 @@ export class Componente {
 
         const {
             id,
+            nombre,
             className,
             atributos,
             eventos,
@@ -26,16 +29,20 @@ export class Componente {
             this.elemento.id = id;
         }
 
+        if (nombre) {
+            this.elemento.name = nombre;
+        }
+
         if (className) {
             this.elemento.className = className;
         }
 
         if (atributos) {
 
-            for (const [nombre, valor] of Object.entries(atributos)) {
+            for (const [clave, valor] of Object.entries(atributos)) {
 
                 this.elemento.setAttribute(
-                    nombre,
+                    clave,
                     valor
                 );
 
@@ -68,8 +75,6 @@ export class Componente {
             this.deshabilitar();
         }
 
-        this.guardarMemoria(config);
-
         return this;
     }
 
@@ -84,10 +89,14 @@ export class Componente {
     }
 
     obtenerMemoria() {
-        return { ...this.memoria };
+
+        return {
+            ...this.memoria
+        };
+
     }
 
-    getElemento() {
+    obtenerElemento() {
         return this.elemento;
     }
 
@@ -96,6 +105,10 @@ export class Componente {
         if ("disabled" in this.elemento) {
 
             this.elemento.disabled = false;
+
+            this.guardarMemoria({
+                deshabilitado: false
+            });
 
         }
 
@@ -108,6 +121,10 @@ export class Componente {
 
             this.elemento.disabled = true;
 
+            this.guardarMemoria({
+                deshabilitado: true
+            });
+
         }
 
         return this;
@@ -117,6 +134,10 @@ export class Componente {
 
         this.elemento.hidden = false;
 
+        this.guardarMemoria({
+            oculto: false
+        });
+
         return this;
     }
 
@@ -124,7 +145,20 @@ export class Componente {
 
         this.elemento.hidden = true;
 
+        this.guardarMemoria({
+            oculto: true
+        });
+
         return this;
+    }
+
+    destruir() {
+
+        this.elemento.remove();
+
+        this.memoria = {};
+
+        return null;
     }
 
 }
