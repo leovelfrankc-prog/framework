@@ -2,25 +2,27 @@ import { Componente } from "./Componente.js";
 
 export class Contenedor extends Componente {
 
-    constructor(tag = "div") {
+    constructor(tag = "div", config = {}) {
 
         super(tag);
 
         this.hijos = [];
+
+        this.aplicarConfiguracion(config);
     }
 
     agregar(componente) {
 
         if (!(componente instanceof Componente)) {
             throw new Error(
-                "Solo pueden agregarse Componentes."
+                "Solo pueden agregarse instancias de Componente."
             );
         }
 
         this.hijos.push(componente);
 
         this.elemento.append(
-            componente.getElemento()
+            componente.obtenerElemento()
         );
 
         return this;
@@ -30,7 +32,7 @@ export class Contenedor extends Componente {
 
         const indice = this.hijos.indexOf(componente);
 
-        if (indice >= 0) {
+        if (indice !== -1) {
 
             this.hijos.splice(
                 indice,
@@ -38,7 +40,7 @@ export class Contenedor extends Componente {
             );
 
             componente
-                .getElemento()
+                .obtenerElemento()
                 .remove();
         }
 
@@ -55,6 +57,11 @@ export class Contenedor extends Componente {
     }
 
     obtenerHijos() {
-        return [...this.hijos];
+
+        return [
+            ...this.hijos
+        ];
+
     }
+
 }
