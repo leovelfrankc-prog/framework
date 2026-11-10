@@ -1,82 +1,60 @@
-// ============================================
-// CONTENEDOR
-// Hereda de Componente y agrupa hijos
-// ============================================
-
 import { Componente } from "./Componente.js";
 
 export class Contenedor extends Componente {
-  /**
-   * @param {string} [tag="div"]
-   * @param {object} [config={}]
-   */
-  constructor(tag = "div", config = {}) {
-    super(tag, config);
 
-    // Lista ordenada de hijos
-    this.hijos = [];
-  }
+    constructor(tag = "div") {
 
-  /**
-   * Agrega un hijo y guarda la instancia (no solo su memoria)
-   * @param {Componente} hijo
-   * @param {string} [nombre] - Clave para acceder luego: this.memoria[nombre]
-   */
-  agregarHijo(hijo, nombre = null) {
-    if (!hijo || typeof hijo.getElemento !== "function") {
-      console.error("agregarHijo: el hijo debe ser un Componente válido");
-      return;
+        super(tag);
+
+        this.hijos = [];
     }
 
-    this.hijos.push(hijo);
-    this.elemento.appendChild(hijo.getElemento());
+    agregar(componente) {
 
-    // Guardamos la instancia completa
-    const clave = nombre || `hijo_${this.hijos.length - 1}`;
-    this.guardarMemoria({
-      [clave]: hijo
-    });
+        if (!(componente instanceof Componente)) {
+            throw new Error(
+                "Solo pueden agregarse Componentes."
+            );
+        }
 
-    return hijo;
-  }
+        this.hijos.push(componente);
 
-  /**
-   * Agrega varios hijos
-   * @param {Array} lista - componentes o { nombre, componente }
-   */
-  agregarHijos(lista = []) {
-    for (const item of lista) {
-      if (item && item.componente) {
-        this.agregarHijo(item.componente, item.nombre);
-      } else {
-        this.agregarHijo(item);
-      }
+        this.elemento.append(
+            componente.getElemento()
+        );
+
+        return this;
     }
-  }
 
-  /**
-   * Devuelve todos los hijos
-   */
-  obtenerHijos() {
-    return this.hijos;
-  }
+    eliminar(componente) {
 
-  /**
-   * Busca un hijo por la clave con la que se guardó en memoria
-   * @param {string} nombre
-   */
-  obtenerHijo(nombre) {
-    return this.memoria[nombre] || null;
-  }
+        const indice = this.hijos.indexOf(componente);
 
-  /**
-   * Renderiza el contenedor (con sus hijos ya dentro)
-   * @param {HTMLElement} contenedorPadre
-   */
-  render(contenedorPadre) {
-    if (contenedorPadre && this.elemento) {
-      contenedorPadre.appendChild(this.elemento);
+        if (indice >= 0) {
+
+            this.hijos.splice(
+                indice,
+                1
+            );
+
+            componente
+                .getElemento()
+                .remove();
+        }
+
+        return this;
     }
-    return this.elemento;
-  }
+
+    vaciar() {
+
+        this.hijos = [];
+
+        this.elemento.replaceChildren();
+
+        return this;
+    }
+
+    obtenerHijos() {
+        return [...this.hijos];
+    }
 }
