@@ -1,12 +1,14 @@
 // ============================================
-// FORMULARIO
+// FORMULARIO (Versión Final Unificada)
 // ============================================
+
 import { Contenedor } from "./Contenedor.js";
 import { Boton } from "./Boton.js";
 
 export class Formulario extends Contenedor {
   constructor(config = {}) {
     super("form", config);
+
     this.config = config;
     this.botonSubmit = null;
     this.tieneCamposObligatorios = false;
@@ -14,11 +16,21 @@ export class Formulario extends Contenedor {
     // Interceptamos el evento submit
     this.elemento.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      // 1. Opcional: Validación nativa del navegador por si acaso
+      if (typeof this.elemento.checkValidity === "function" && !this.elemento.checkValidity()) {
+        this.elemento.reportValidity();
+        return;
+      }
+
+      // 2. Validación estricta propia de las clases
       if (!this.esValido()) {
         console.warn("Formulario incompleto o inválido.");
         return;
       }
+
       this.bloquearEnvio(true);
+
       try {
         if (typeof this.config.onSubmit === "function") {
           await this.config.onSubmit(this.obtenerDatos(), this);
@@ -51,18 +63,21 @@ export class Formulario extends Contenedor {
     if (this.botonSubmit) {
       this.verificarEstadoBoton();
     }
+
     return hijo;
   }
 
   /**
-   * ORDEN CORRECTO: Primero se agregan todos los hijos.
+   * ORDEN CORRECTO: Primero se agregan todos los hijos. 
    * Cuando el motor manda a renderizar, creamos el botón al final y evaluamos.
    */
   render(contenedorPadre) {
     const el = super.render(contenedorPadre);
+
     if (!this.botonSubmit) {
       this._crearBotonAlFinal(this.config);
     }
+
     return el;
   }
 
@@ -93,6 +108,7 @@ export class Formulario extends Contenedor {
   esValido() {
     for (const hijo of this.hijos) {
       if (hijo === this.botonSubmit) continue;
+
       if (typeof hijo.esValido === "function" && !hijo.esValido()) {
         return false;
       }
@@ -114,7 +130,6 @@ export class Formulario extends Contenedor {
     // 2. Si no hay campos obligatorios, exigimos al menos un campo con valor
     if (!this.tieneCamposObligatorios) {
       let tieneAlMenosUno = false;
-
       for (const hijo of this.hijos) {
         if (hijo === this.botonSubmit) continue;
 
@@ -131,7 +146,6 @@ export class Formulario extends Contenedor {
           }
         }
       }
-
       return tieneAlMenosUno;
     }
 
@@ -163,6 +177,7 @@ export class Formulario extends Contenedor {
 
   obtenerDatos() {
     const datos = {};
+
     for (const [clave, valor] of Object.entries(this.memoria)) {
       if (valor && typeof valor === "object" && valor !== this.botonSubmit) {
         if (typeof valor.obtenerValor === "function") {
@@ -172,6 +187,7 @@ export class Formulario extends Contenedor {
         }
       }
     }
+
     return datos;
   }
 }
