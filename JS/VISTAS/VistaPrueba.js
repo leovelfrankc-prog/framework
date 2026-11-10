@@ -1,4 +1,4 @@
-import { Vista } from "./Vista.js";
+import { Vista } from "../COMPONENTES/Vista.js";
 import { Formulario } from "../COMPONENTES/Formulario.js";
 import { InputTexto } from "../COMPONENTES/InputTexto.js";
 import { Select } from "../COMPONENTES/Select.js";
