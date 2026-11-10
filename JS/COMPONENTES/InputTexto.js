@@ -1,5 +1,3 @@
-import { Componente } from "./Componente.js";
-
 export class InputTexto extends Componente {
 
     constructor(config = {}) {
@@ -8,33 +6,26 @@ export class InputTexto extends Componente {
 
         this.elemento.type = "text";
 
-        this.obligatorio = Boolean(config.obligatorio);
-
-        if (config.id) {
-            this.elemento.id = config.id;
-        }
-
-        if (config.className) {
-            this.elemento.className = config.className;
-        }
-
-        if (config.placeholder) {
-            this.elemento.placeholder = config.placeholder;
-        }
+        this.obligatorio = Boolean(
+            config.obligatorio
+        );
 
         if (this.obligatorio) {
             this.elemento.required = true;
         }
 
-        this.elemento.addEventListener("input", () => {
-            this.guardarMemoria({
-                valor: this.obtenerValor()
-            });
-        });
+        this.aplicarConfiguracion(config);
 
-        this.guardarMemoria({
-            valor: ""
-        });
+        this.elemento.addEventListener(
+            "input",
+            () => {
+
+                this.guardarMemoria({
+                    valor: this.obtenerValor()
+                });
+
+            }
+        );
     }
 
     obtenerValor() {
@@ -44,10 +35,6 @@ export class InputTexto extends Componente {
     establecerValor(valor = "") {
 
         this.elemento.value = valor;
-
-        this.guardarMemoria({
-            valor
-        });
 
         return this;
     }
@@ -65,13 +52,4 @@ export class InputTexto extends Componente {
         return this.obtenerValor().trim() !== "";
     }
 
-    deshabilitar() {
-        this.elemento.disabled = true;
-        return this;
-    }
-
-    habilitar() {
-        this.elemento.disabled = false;
-        return this;
-    }
 }
