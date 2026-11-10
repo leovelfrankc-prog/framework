@@ -51,12 +51,24 @@ export class Input extends Componente {
   }
 
   /**
-   * Valida si el campo cumple con la regla de obligatoriedad
+   * Valida si el campo cumple con la regla de obligatoriedad de forma robusta
    */
   esValido() {
-    if (this.obligatorio && !this.elemento.value.trim()) {
+    if (!this.obligatorio) {
+      return true;
+    }
+
+    const valor = this.obtenerValor();
+
+    // Si es null, undefined o una cadena vacía tras hacer trim, no es válido
+    if (valor === null || valor === undefined) {
       return false;
     }
+
+    if (typeof valor === "string" && valor.trim() === "") {
+      return false;
+    }
+
     return true;
   }
 
