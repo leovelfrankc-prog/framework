@@ -8,22 +8,18 @@ export class Select extends Componente {
 
         this.obligatorio = Boolean(config.obligatorio);
 
-        if (config.id) {
-            this.elemento.id = config.id;
-        }
-
-        if (config.className) {
-            this.elemento.className = config.className;
-        }
-
         if (this.obligatorio) {
             this.elemento.required = true;
         }
 
+        this.aplicarConfiguracion(config);
+
         this.elemento.addEventListener("change", () => {
+
             this.guardarMemoria({
                 valor: this.obtenerValor()
             });
+
         });
     }
 
@@ -70,13 +66,4 @@ export class Select extends Componente {
         return this.obtenerValor() !== "";
     }
 
-    deshabilitar() {
-        this.elemento.disabled = true;
-        return this;
-    }
-
-    habilitar() {
-        this.elemento.disabled = false;
-        return this;
-    }
 }
