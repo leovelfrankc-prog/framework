@@ -1,8 +1,9 @@
-import { Vista } from "../COMPONENTES/Vista.js";
-import { Formulario } from "../COMPONENTES/Formulario.js";
-import { InputTexto } from "../COMPONENTES/InputTexto.js";
-import { Select } from "../COMPONENTES/Select.js";
-
+import {
+    Vista,
+    Formulario,
+    InputTexto,
+    Select
+} from "../REGISTRO.js";
 export class VistaPrueba extends Vista {
 
     inicializar() {
