@@ -7,3 +7,4 @@ export { Select } from "./Select.js";
 export { Boton } from "./Boton.js";
 export { InputArchivo } from "./InputArchivo.js";
 export { InputEmail } from "./InputEmail.js";
+export { InputPassword } from "./InputPassword.js";
