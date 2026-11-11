@@ -5,3 +5,4 @@ export { Formulario } from "./Formulario.js";
 export { InputTexto } from "./InputTexto.js";
 export { Select } from "./Select.js";
 export { Boton } from "./Boton.js";
+export { InputArchivo } from "./InputArchivo.js";
