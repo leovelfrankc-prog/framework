@@ -60,15 +60,7 @@ export class VistaPrueba extends Vista {
         this.modal.establecerTamaño("md");
         this.modal.establecerCuerpo(formulario);
 
-        // Botones del modal (opcional, puedes quitarlos si solo quieres el del formulario)
-        this.modal.agregarBotonesAceptarCancelar({
-            textoAceptar: "Cerrar",
-            textoCancelar: "Cancelar",
-            onAceptar: () => {
-                // Solo cierra (el envío real lo hace el botón del formulario)
-            }
-        });
-
+        
         // ========== BOTÓN QUE ABRE EL MODAL ==========
         const btnPrueba = new Boton({
             texto: "Prueba",
