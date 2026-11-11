@@ -2,7 +2,8 @@ import {
     Vista,
     Modal,
     Boton,
-    Tabla
+    Tabla,
+    Contenedor
 } from "../REGISTRO.js";
 
 export class VistaPrueba extends Vista {
