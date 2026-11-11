@@ -3,7 +3,8 @@ import {
     Formulario,
     InputTexto,
     Select,
-    Modal
+    Modal,
+    Boton
 } from "../REGISTRO.js";
 
 export class VistaPrueba extends Vista {
@@ -14,53 +15,19 @@ export class VistaPrueba extends Vista {
                 "container vh-100 d-flex justify-content-center align-items-center"
         });
 
-        // Creamos el modal una sola vez
-        this.modal = new Modal({
-            titulo: "Confirmar selección"
-        });
-
-        this.modal.establecerTamaño("md");
-
-        // Guardamos los datos actuales para usarlos en el Accept
-        this.datosActuales = null;
-
-        // Botones Aceptar / Cancelar (solo se agregan una vez)
-        this.modal.agregarBotonesAceptarCancelar({
-            textoAceptar: "Aceptar",
-            textoCancelar: "Cancelar",
-            onAceptar: () => {
-                if (this.datosActuales) {
-                    alert(
-                        `Nombre: ${this.datosActuales.nombre}\nOpción: ${this.datosActuales.opcion}`
-                    );
-                }
-            }
-            // onCancelar se puede dejar vacío (solo cierra)
-        });
-
-        // Formulario
+        // ========== FORMULARIO ==========
         const formulario = new Formulario({
-            className: "card shadow p-4",
+            className: "p-1",
             textoBoton: "Mostrar selección",
             onSubmit: (datos) => {
-                // Guardamos los datos
-                this.datosActuales = datos;
-
-                // Actualizamos el contenido del modal
-                const contenido = document.createElement("div");
-                contenido.innerHTML = `
-                    <p class="mb-2"><strong>Nombre:</strong> ${datos.nombre}</p>
-                    <p class="mb-0"><strong>Opción:</strong> ${datos.opcion}</p>
-                `;
-
-                this.modal.establecerCuerpo(contenido);
-                this.modal.abrir();
+                alert(
+                    `Nombre: ${datos.nombre}\nOpción: ${datos.opcion}`
+                );
+                this.modal.cerrar(); // Cerrar el modal al enviar
             }
         });
 
-        formulario.obtenerElemento().style.width = "350px";
-
-        // Campo requerido
+        // Campo nombre
         const txtNombre = new InputTexto({
             obligatorio: true,
             className: "form-control mb-3",
@@ -85,7 +52,34 @@ export class VistaPrueba extends Vista {
             .registrar("nombre", txtNombre)
             .registrar("opcion", selOpciones);
 
-        // Agregar formulario a la vista
-        this.agregar(formulario);
+        // ========== MODAL ==========
+        this.modal = new Modal({
+            titulo: "Formulario de prueba"
+        });
+
+        this.modal.establecerTamaño("md");
+        this.modal.establecerCuerpo(formulario);
+
+        // Botones del modal (opcional, puedes quitarlos si solo quieres el del formulario)
+        this.modal.agregarBotonesAceptarCancelar({
+            textoAceptar: "Cerrar",
+            textoCancelar: "Cancelar",
+            onAceptar: () => {
+                // Solo cierra (el envío real lo hace el botón del formulario)
+            }
+        });
+
+        // ========== BOTÓN QUE ABRE EL MODAL ==========
+        const btnPrueba = new Boton({
+            texto: "Prueba",
+            className: "btn btn-primary btn-lg"
+        });
+
+        btnPrueba.elemento.addEventListener("click", () => {
+            this.modal.abrir();
+        });
+
+        // Agregar el botón a la vista
+        this.agregar(btnPrueba);
     }
 }
