@@ -10,3 +10,6 @@ export { InputEmail } from "./InputEmail.js";
 export { InputPassword } from "./InputPassword.js";
 export { Modal } from "./Modal.js";
 export { Tabla } from "./Tabla.js";
+export { Card } from "./Card.js";
+export { Menu } from "./Menu.js";
+export { Toast } from "./Toast.js";
