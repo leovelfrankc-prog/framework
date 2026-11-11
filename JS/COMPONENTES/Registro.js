@@ -13,3 +13,4 @@ export { Tabla } from "./Tabla.js";
 export { Card } from "./Card.js";
 export { Menu } from "./Menu.js";
 export { Toast } from "./Toast.js";
+export { Progress } from "./Progress.js";
