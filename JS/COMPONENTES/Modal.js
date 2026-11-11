@@ -8,7 +8,8 @@ export class Modal extends Contenedor {
             className: "modal fade",
             atributos: {
                 tabindex: "-1",
-                "aria-hidden": "true"
+                "aria-hidden": "true",
+                role: "dialog"
             },
             ...config
         });
@@ -19,7 +20,7 @@ export class Modal extends Contenedor {
 
         // Estructura Bootstrap
         this.dialogo = new Contenedor("div", {
-            className: "modal-dialog"
+            className: "modal-dialog modal-dialog-centered"
         });
 
         this.contenido = new Contenedor("div", {
@@ -34,7 +35,6 @@ export class Modal extends Contenedor {
         this.titulo.elemento.className = "modal-title";
         this.titulo.elemento.textContent = config.titulo || "";
 
-        // Botón cerrar (X)
         this.botonCerrar = new Boton({
             className: "btn-close",
             atributos: {
@@ -78,8 +78,8 @@ export class Modal extends Contenedor {
             }
         };
 
-        // Estado inicial
-        this.ocultar();
+        // Estado inicial (no usamos hidden de Componente para evitar conflictos)
+        this.elemento.style.display = "none";
         this.guardarMemoria({ estaAbierto: false });
     }
 
@@ -122,9 +122,6 @@ export class Modal extends Contenedor {
         return this;
     }
 
-    /**
-     * Agrega uno o varios botones personalizados al footer
-     */
     agregarBotones(...botones) {
         botones.forEach(boton => {
             if (boton instanceof Componente) {
@@ -134,19 +131,10 @@ export class Modal extends Contenedor {
         return this;
     }
 
-    /**
-     * Agrega los botones Aceptar y Cancelar (solo si se necesitan)
-     * @param {Object} opciones
-     * @param {string} [opciones.textoAceptar="Aceptar"]
-     * @param {string} [opciones.textoCancelar="Cancelar"]
-     * @param {string} [opciones.claseAceptar="btn btn-primary"]
-     * @param {string} [opciones.claseCancelar="btn btn-secondary"]
-     * @param {Function|null} [opciones.onAceptar=null] - Callback al pulsar Aceptar
-     * @param {Function|null} [opciones.onCancelar=null] - Callback al pulsar Cancelar
-     * @param {boolean} [opciones.cerrarAlAceptar=true] - Cerrar el modal al aceptar
-     * @param {boolean} [opciones.cerrarAlCancelar=true] - Cerrar el modal al cancelar
-     */
     agregarBotonesAceptarCancelar(opciones = {}) {
+        // Limpiamos el footer antes de agregar los botones
+        this.pie.vaciar();
+
         const {
             textoAceptar = "Aceptar",
             textoCancelar = "Cancelar",
@@ -169,102 +157,99 @@ export class Modal extends Contenedor {
         });
 
         btnCancelar.elemento.addEventListener("click", () => {
-            if (typeof onCancelar === "function") {
-                onCancelar();
-            }
-            if (cerrarAlCancelar) {
-                this.cerrar();
-            }
+            if (typeof onCancelar === "function") onCancelar();
+            if (cerrarAlCancelar) this.cerrar();
         });
 
         btnAceptar.elemento.addEventListener("click", () => {
-            if (typeof onAceptar === "function") {
-                onAceptar();
-            }
-            if (cerrarAlAceptar) {
-                this.cerrar();
-            }
+            if (typeof onAceptar === "function") onAceptar();
+            if (cerrarAlAceptar) this.cerrar();
         });
 
         this.agregarBotones(btnCancelar, btnAceptar);
 
-        // Guardamos referencias por si se necesitan después
         this.botonCancelar = btnCancelar;
         this.botonAceptar = btnAceptar;
 
         return this;
     }
 
-    /**
-     * Tamaño del modal (Bootstrap)
-     * @param {"sm"|"lg"|"xl"|null} tamaño
-     */
     establecerTamaño(tamaño = null) {
-        this.dialogo.elemento.classList.remove(
-            "modal-sm",
-            "modal-lg",
-            "modal-xl"
-        );
+        this.dialogo.elemento.classList.remove("modal-sm", "modal-lg", "modal-xl");
 
         if (tamaño) {
             this.dialogo.elemento.classList.add(`modal-${tamaño}`);
         }
-
         return this;
     }
 
     abrir() {
-    if (this.estaAbierto) return this;
+        if (this.estaAbierto) return this;
 
-    if (!this.elemento.isConnected) {
-        document.body.append(this.elemento);
+        // Meter en el body si no está
+        if (!document.body.contains(this.elemento)) {
+            document.body.appendChild(this.elemento);
+        }
+
+        // Mostrar de forma fiable
+        this.elemento.style.display = "block";
+        this.elemento.removeAttribute("aria-hidden");
+        this.elemento.setAttribute("aria-modal", "true");
+
+        // Forzar reflow para que la animación fade funcione
+        this.elemento.offsetHeight;
+
+        this.elemento.classList.add("show");
+
+        // Backdrop
+        this._crearBackdrop();
+
+        document.body.classList.add("modal-open");
+        document.body.style.overflow = "hidden";
+
+        this.estaAbierto = true;
+        this.guardarMemoria({ estaAbierto: true });
+
+        document.addEventListener("keydown", this._manejarEscape);
+
+        return this;
     }
 
-    // Quitar el hidden (importante)
-    this.mostrar();
+    cerrar() {
+        if (!this.estaAbierto) return this;
 
-    // Mostrar al estilo Bootstrap
-    this.elemento.classList.add("show");
-    this.elemento.style.display = "block";
-    this.elemento.setAttribute("aria-modal", "true");
-    this.elemento.removeAttribute("aria-hidden");
+        this.elemento.classList.remove("show");
 
-    this._crearBackdrop();
+        // Esperamos a que termine la transición (opcional pero más limpio)
+        const alTerminar = () => {
+            this.elemento.style.display = "none";
+            this.elemento.setAttribute("aria-hidden", "true");
+            this.elemento.removeAttribute("aria-modal");
+            this.elemento.removeEventListener("transitionend", alTerminar);
+        };
 
-    document.body.classList.add("modal-open");
-    document.body.style.overflow = "hidden";
+        this.elemento.addEventListener("transitionend", alTerminar);
 
-    this.estaAbierto = true;
-    this.guardarMemoria({ estaAbierto: true });
+        // Por si no hay transición
+        setTimeout(() => {
+            if (this.elemento.style.display !== "none") {
+                alTerminar();
+            }
+        }, 200);
 
-    document.addEventListener("keydown", this._manejarEscape);
+        this._eliminarBackdrop();
 
-    return this;
-}
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow = "";
 
-cerrar() {
-    if (!this.estaAbierto) return this;
+        this.estaAbierto = false;
+        this.guardarMemoria({ estaAbierto: false });
 
-    this.elemento.classList.remove("show");
-    this.elemento.style.display = "none";
-    this.elemento.setAttribute("aria-hidden", "true");
-    this.elemento.removeAttribute("aria-modal");
+        document.removeEventListener("keydown", this._manejarEscape);
 
-    // Volver a ocultar con el método de Componente
-    this.ocultar();
+        return this;
+    }
 
-    this._eliminarBackdrop();
-
-    document.body.classList.remove("modal-open");
-    document.body.style.overflow = "";
-
-    this.estaAbierto = false;
-    this.guardarMemoria({ estaAbierto: false });
-
-    document.removeEventListener("keydown", this._manejarEscape);
-
-    return this;
-}
     alternar() {
         return this.estaAbierto ? this.cerrar() : this.abrir();
     }
@@ -273,19 +258,17 @@ cerrar() {
         return this.estaAbierto;
     }
 
-    // Métodos privados
     _crearBackdrop() {
-        if (this._backdrop) return;
+        // Evitar varios backdrops
+        if (document.querySelector(".modal-backdrop")) return;
 
         this._backdrop = document.createElement("div");
         this._backdrop.className = "modal-backdrop fade show";
-        document.body.append(this._backdrop);
+        document.body.appendChild(this._backdrop);
     }
 
     _eliminarBackdrop() {
-        if (this._backdrop) {
-            this._backdrop.remove();
-            this._backdrop = null;
-        }
+        document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+        this._backdrop = null;
     }
 }
