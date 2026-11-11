@@ -214,51 +214,57 @@ export class Modal extends Contenedor {
     }
 
     abrir() {
-        if (this.estaAbierto) return this;
+    if (this.estaAbierto) return this;
 
-        if (!this.elemento.isConnected) {
-            document.body.append(this.elemento);
-        }
-
-        this.elemento.classList.add("show");
-        this.elemento.style.display = "block";
-        this.elemento.setAttribute("aria-modal", "true");
-        this.elemento.removeAttribute("aria-hidden");
-
-        this._crearBackdrop();
-
-        document.body.classList.add("modal-open");
-        document.body.style.overflow = "hidden";
-
-        this.estaAbierto = true;
-        this.guardarMemoria({ estaAbierto: true });
-
-        document.addEventListener("keydown", this._manejarEscape);
-
-        return this;
+    if (!this.elemento.isConnected) {
+        document.body.append(this.elemento);
     }
 
-    cerrar() {
-        if (!this.estaAbierto) return this;
+    // Quitar el hidden (importante)
+    this.mostrar();
 
-        this.elemento.classList.remove("show");
-        this.elemento.style.display = "none";
-        this.elemento.setAttribute("aria-hidden", "true");
-        this.elemento.removeAttribute("aria-modal");
+    // Mostrar al estilo Bootstrap
+    this.elemento.classList.add("show");
+    this.elemento.style.display = "block";
+    this.elemento.setAttribute("aria-modal", "true");
+    this.elemento.removeAttribute("aria-hidden");
 
-        this._eliminarBackdrop();
+    this._crearBackdrop();
 
-        document.body.classList.remove("modal-open");
-        document.body.style.overflow = "";
+    document.body.classList.add("modal-open");
+    document.body.style.overflow = "hidden";
 
-        this.estaAbierto = false;
-        this.guardarMemoria({ estaAbierto: false });
+    this.estaAbierto = true;
+    this.guardarMemoria({ estaAbierto: true });
 
-        document.removeEventListener("keydown", this._manejarEscape);
+    document.addEventListener("keydown", this._manejarEscape);
 
-        return this;
-    }
+    return this;
+}
 
+cerrar() {
+    if (!this.estaAbierto) return this;
+
+    this.elemento.classList.remove("show");
+    this.elemento.style.display = "none";
+    this.elemento.setAttribute("aria-hidden", "true");
+    this.elemento.removeAttribute("aria-modal");
+
+    // Volver a ocultar con el método de Componente
+    this.ocultar();
+
+    this._eliminarBackdrop();
+
+    document.body.classList.remove("modal-open");
+    document.body.style.overflow = "";
+
+    this.estaAbierto = false;
+    this.guardarMemoria({ estaAbierto: false });
+
+    document.removeEventListener("keydown", this._manejarEscape);
+
+    return this;
+}
     alternar() {
         return this.estaAbierto ? this.cerrar() : this.abrir();
     }
