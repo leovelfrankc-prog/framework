@@ -184,37 +184,41 @@ export class Modal extends Contenedor {
     }
 
     abrir() {
-        if (this.estaAbierto) return this;
+    if (this.estaAbierto) return this;
 
-        // Meter en el body si no está
-        if (!document.body.contains(this.elemento)) {
-            document.body.appendChild(this.elemento);
-        }
+    console.log("1. Entrando a abrir()");
 
-        // Mostrar de forma fiable
-        this.elemento.style.display = "block";
-        this.elemento.removeAttribute("aria-hidden");
-        this.elemento.setAttribute("aria-modal", "true");
-
-        // Forzar reflow para que la animación fade funcione
-        this.elemento.offsetHeight;
-
-        this.elemento.classList.add("show");
-
-        // Backdrop
-        this._crearBackdrop();
-
-        document.body.classList.add("modal-open");
-        document.body.style.overflow = "hidden";
-
-        this.estaAbierto = true;
-        this.guardarMemoria({ estaAbierto: true });
-
-        document.addEventListener("keydown", this._manejarEscape);
-
-        return this;
+    if (!document.body.contains(this.elemento)) {
+        document.body.appendChild(this.elemento);
+        console.log("2. Modal añadido al body");
     }
 
+    this.elemento.style.display = "block";
+    this.elemento.style.zIndex = "1055"; // forzar z-index
+    this.elemento.removeAttribute("aria-hidden");
+    this.elemento.setAttribute("aria-modal", "true");
+
+    // Forzar reflow
+    this.elemento.offsetHeight;
+
+    this.elemento.classList.add("show");
+
+    console.log("3. Clases del modal:", this.elemento.className);
+    console.log("4. Display:", this.elemento.style.display);
+    console.log("5. Modal en el DOM:", document.body.contains(this.elemento));
+
+    this._crearBackdrop();
+
+    document.body.classList.add("modal-open");
+    document.body.style.overflow = "hidden";
+
+    this.estaAbierto = true;
+    this.guardarMemoria({ estaAbierto: true });
+
+    document.addEventListener("keydown", this._manejarEscape);
+
+    return this;
+}
     cerrar() {
         if (!this.estaAbierto) return this;
 
