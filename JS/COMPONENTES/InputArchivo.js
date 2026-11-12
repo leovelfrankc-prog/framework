@@ -1,6 +1,7 @@
 import { Componente } from "./Componente.js";
 
 export class InputArchivo extends Componente {
+
     constructor(config = {}) {
         super("input");
         this.elemento.type = "file";
@@ -15,12 +16,16 @@ export class InputArchivo extends Componente {
 
         this.aplicarConfiguracion(config);
 
-        this.elemento.addEventListener("change", async () => {
-            await this.procesarArchivo();
-            
-            // Disparar un evento personalizado o change explícito para que el Formulario reaccione
-            this.elemento.dispatchEvent(new Event("change", { bubbles: true }));
-        });
+        this.elemento.addEventListener(
+            "change",
+            async (e) => {
+                // Usar requestAnimationFrame para liberar el hilo principal 
+                // antes de iniciar la lectura pesada del archivo
+                requestAnimationFrame(async () => {
+                    await this.procesarArchivo();
+                });
+            }
+        );
     }
 
     async procesarArchivo() {
@@ -31,9 +36,16 @@ export class InputArchivo extends Componente {
             return;
         }
 
+        // Opcional: Validar tamaño máximo (ejemplo: 5MB) para evitar cuelgues graves
+        const MAX_SIZE = 5 * 1024 * 1024; 
+        if (this.archivo.size > MAX_SIZE) {
+            alert("El archivo es demasiado grande. Selecciona uno menor a 5MB.");
+            this.limpiar();
+            return;
+        }
+
         this.base64 = await this.convertirABase64(this.archivo);
 
-        // Si tu clase base tiene este método, mantenerlo; si no, omitirlo
         if (typeof this.guardarMemoria === "function") {
             this.guardarMemoria({
                 nombre: this.archivo.name,
@@ -45,12 +57,19 @@ export class InputArchivo extends Componente {
     }
 
     convertirABase64(archivo) {
-        return new Promise((resolve, reject) => {
-            const lector = new FileReader();
-            lector.onload = () => resolve(lector.result);
-            lector.onerror = reject;
-            lector.readAsDataURL(archivo);
-        });
+        return new Promise(
+            (resolve, reject) => {
+                const lector = new FileReader();
+
+                lector.onload = () => resolve(lector.result);
+                lector.onerror = reject;
+
+                // Ejecutamos la lectura liberando el stack de ejecución actual
+                setTimeout(() => {
+                    lector.readAsDataURL(archivo);
+                }, 0);
+            }
+        );
     }
 
     obtenerArchivo() {
@@ -90,4 +109,5 @@ export class InputArchivo extends Componente {
         }
         return this.archivo !== null;
     }
+
 }
