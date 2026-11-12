@@ -4,7 +4,7 @@ import {
     Boton,
     Tabla,
     Contenedor,
-    Texto,
+    
     Formulario,
     InputArchivo
 } from "../REGISTRO.js";
