@@ -1,7 +1,9 @@
-import { Vista } from "../COMPONENTES/Vista.js";
-import { Formulario } from "../COMPONENTES/Formulario.js";
-import { InputArchivo } from "../COMPONENTES/InputArchivo.js";
-
+import {
+    Vista,
+    Formulario,
+    InputArchivo
+    
+} from "../REGISTRO.js";
 export class VistaPrueba extends Vista {
     inicializar() {
         // Configuración de la vista principal con clases de diseño
