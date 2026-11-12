@@ -3,18 +3,60 @@ import {
     Modal,
     Boton,
     Tabla,
-    Contenedor
+    Contenedor,
+    Texto,
+    InputArchivo
 } from "../REGISTRO.js";
+
 
 export class VistaPrueba extends Vista {
     inicializar() {
         // Contenedor principal
         this.aplicarConfiguracion({
             className:
-                "container vh-100 d-flex justify-content-center align-items-center"
+                "container vh-100 d-flex flex-column justify-content-center align-items-center gap-4"
         });
 
-        // ========== TABLA ==========
+        // ========== INSTANCIA DE INPUT ARCHIVO ==========
+        const inputArchivo = new InputArchivo({
+            obligatorio: true,
+            className: "form-control" // Opcional, si usas Bootstrap
+        });
+
+        // Contenedor para agrupar el input y un botón de prueba
+        const contenedorPrueba = new Contenedor("div", {
+            className: "card p-4 shadow-sm w-50 d-flex flex-column gap-3"
+        });
+
+        const titulo = new Texto("h4", {
+            texto: "Prueba de InputArchivo",
+            className: "card-title"
+        });
+
+        const btnProbarArchivo = new Boton({
+            texto: "Ver Datos del Archivo",
+            className: "btn btn-success"
+        });
+
+        btnProbarArchivo.elemento.addEventListener("click", () => {
+            if (!inputArchivo.esValido()) {
+                alert("Por favor, selecciona un archivo obligatorio.");
+                return;
+            }
+
+            console.log("Nombre:", inputArchivo.obtenerNombre());
+            console.log("Tipo:", inputArchivo.obtenerTipo());
+            console.log("Tamaño (bytes):", inputArchivo.obtenerTamano());
+            console.log("Base64:", inputArchivo.obtenerBase64());
+
+            alert(`Archivo cargado: ${inputArchivo.obtenerNombre()} (${Math.round(inputArchivo.obtenerTamano() / 1024)} KB)`);
+        });
+
+        contenedorPrueba.agregar(titulo);
+        contenedorPrueba.agregar(inputArchivo);
+        contenedorPrueba.agregar(btnProbarArchivo);
+
+        // ========== TABLA Y MODAL EXISTENTES ==========
         const tabla = new Tabla({
             striped: true,
             hover: true,
@@ -23,7 +65,6 @@ export class VistaPrueba extends Vista {
 
         tabla.establecerEncabezados(["ID", "Nombre", "Email", "Acciones"]);
 
-        // Datos de ejemplo
         const datos = [
             { id: 1, nombre: "Juan Pérez", email: "juan@correo.com" },
             { id: 2, nombre: "María López", email: "maria@correo.com" },
@@ -31,7 +72,6 @@ export class VistaPrueba extends Vista {
             { id: 4, nombre: "Ana Torres", email: "ana@correo.com" }
         ];
 
-        // Cargar datos + botones por fila
         tabla.cargarDatos(datos, ["id", "nombre", "email"], (registro) => {
             const acciones = new Contenedor("div", {
                 className: "d-flex gap-1"
@@ -59,31 +99,28 @@ export class VistaPrueba extends Vista {
             return acciones;
         });
 
-        // ========== MODAL ==========
         this.modal = new Modal({
             titulo: "Listado de prueba"
         });
 
-        this.modal.establecerTamaño("lg"); // un poco más ancho para la tabla
+        this.modal.establecerTamaño("lg");
         this.modal.establecerCuerpo(tabla);
-
-        // Botones del modal
         this.modal.agregarBotonesAceptarCancelar({
             textoAceptar: "Cerrar",
             textoCancelar: "Cancelar"
         });
 
-        // ========== BOTÓN QUE ABRE EL MODAL ==========
-        const btnPrueba = new Boton({
-            texto: "Prueba",
-            className: "btn btn-primary btn-lg"
+        const btnPruebaModal = new Boton({
+            texto: "Abrir Tabla (Modal)",
+            className: "btn btn-outline-secondary btn-lg"
         });
 
-        btnPrueba.elemento.addEventListener("click", () => {
+        btnPruebaModal.elemento.addEventListener("click", () => {
             this.modal.abrir();
         });
 
-        // Agregar el botón a la vista
-        this.agregar(btnPrueba);
+        // Agregar elementos a la vista principal
+        this.agregar(contenedorPrueba);
+        this.agregar(btnPruebaModal);
     }
 }
