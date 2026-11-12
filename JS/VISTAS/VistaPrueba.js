@@ -5,56 +5,57 @@ import {
     Tabla,
     Contenedor,
     Texto,
+    Formulario,
     InputArchivo
 } from "../REGISTRO.js";
 
 
 export class VistaPrueba extends Vista {
     inicializar() {
-        // Contenedor principal
+        // Contenedor principal de la vista
         this.aplicarConfiguracion({
             className:
                 "container vh-100 d-flex flex-column justify-content-center align-items-center gap-4"
         });
 
-        // ========== INSTANCIA DE INPUT ARCHIVO ==========
-        const inputArchivo = new InputArchivo({
-            obligatorio: true,
-            className: "form-control" // Opcional, si usas Bootstrap
+        // ========== FORMULARIO CON INPUT ARCHIVO ==========
+        const formulario = new Formulario({
+            textoBoton: "Ver contenido del archivo",
+            className: "card p-4 shadow-sm w-50 d-flex flex-column gap-3",
+            onSubmit: (datos) => {
+                const base64 = datos.archivo;
+
+                if (!base64) {
+                    alert("No se ha seleccionado ningún archivo.");
+                    return;
+                }
+
+                // Muestra el contenido Base64 (o los datos) en una alerta
+                alert(`Contenido almacenado (Base64):\n\n${base64.substring(0, 100)}... (truncado por longitud)`);
+                console.log("Contenido completo del archivo en Base64:", base64);
+            }
         });
 
-        // Contenedor para agrupar el input y un botón de prueba
-        const contenedorPrueba = new Contenedor("div", {
+        const inputArchivo = new InputArchivo({
+            obligatorio: true,
+            className: "form-control"
+        });
+
+        // Registramos el input en el formulario bajo la clave "archivo"
+        formulario.registrar("archivo", inputArchivo);
+
+        // Contenedor tarjeta para envolver el formulario
+        const tarjetaFormulario = new Contenedor("div", {
             className: "card p-4 shadow-sm w-50 d-flex flex-column gap-3"
         });
 
-        const titulo = new Texto("h4", {
-            texto: "Prueba de InputArchivo",
-            className: "card-title"
+        const tituloForm = new Texto("h4", {
+            texto: "Formulario con Input Archivo",
+            className: "card-title text-center"
         });
 
-        const btnProbarArchivo = new Boton({
-            texto: "Ver Datos del Archivo",
-            className: "btn btn-success"
-        });
-
-        btnProbarArchivo.elemento.addEventListener("click", () => {
-            if (!inputArchivo.esValido()) {
-                alert("Por favor, selecciona un archivo obligatorio.");
-                return;
-            }
-
-            console.log("Nombre:", inputArchivo.obtenerNombre());
-            console.log("Tipo:", inputArchivo.obtenerTipo());
-            console.log("Tamaño (bytes):", inputArchivo.obtenerTamano());
-            console.log("Base64:", inputArchivo.obtenerBase64());
-
-            alert(`Archivo cargado: ${inputArchivo.obtenerNombre()} (${Math.round(inputArchivo.obtenerTamano() / 1024)} KB)`);
-        });
-
-        contenedorPrueba.agregar(titulo);
-        contenedorPrueba.agregar(inputArchivo);
-        contenedorPrueba.agregar(btnProbarArchivo);
+        tarjetaFormulario.agregar(tituloForm);
+        tarjetaFormulario.agregar(formulario);
 
         // ========== TABLA Y MODAL EXISTENTES ==========
         const tabla = new Tabla({
@@ -119,8 +120,8 @@ export class VistaPrueba extends Vista {
             this.modal.abrir();
         });
 
-        // Agregar elementos a la vista principal
-        this.agregar(contenedorPrueba);
+        // ========== AGREGAR A LA VISTA ==========
+        this.agregar(tarjetaFormulario);
         this.agregar(btnPruebaModal);
     }
 }
